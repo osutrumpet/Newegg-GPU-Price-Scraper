@@ -1,38 +1,43 @@
 from urllib.request import urlopen as uReq
 from bs4 import BeautifulSoup as soup
+import time
 
-newegg_url = 'https://www.newegg.com/p/pl?d=graphics+card'
-list_2060 = []
+newegg_url = 'https://www.newegg.com/p/pl?d=graphics+card&page='
+list_gpus = [2060,2070,2080,3060,3070,3080]
+list_price = []
 list_1050 = []
 
 filename = "current.txt"
 f = open(filename, "w")
 
-def price_scrape():
+def price_scrape(gpu):
     #gather webpage "Graphics card page only
-    uClient = uReq(newegg_url)
-    page_html = uClient.read()
-    uClient.close()
+    for x in range(50):
+        try:
+            uClient = uReq(newegg_url + str(x))
+            page_html = uClient.read()
+            uClient.close()
 
-    #parse the html from the page using BS4
-    page_soup = soup(page_html, "html.parser")
-    #find all product
-    containers = page_soup.findAll("div",{"class":"item-container"})
+            #parse the html from the page using BS4
+            page_soup = soup(page_html, "html.parser")
+            #find all product
+            containers = page_soup.findAll("div",{"class":"item-container"})
 
-    for container in containers:
-        title =  container.img["alt"]
-        if "2060" in title:
-            price_container = container.findAll("li",{"class":"price-current"})
-            price = price_container[0].strong.text
-            list_2060.append(price)
+            for container in containers:
+                title =  container.img["alt"]
+                if str(gpu) in title:
+                    price_container = container.findAll("li",{"class":"price-current"})
+                    price = price_container[0].strong.text
+                    list_price.append(price.replace(",",""))
+        except AttributeError:
+            print("NoneType error thrown during search for: " + str(gpu))
+    sumandprint(list_price,gpu)
+    list_price.clear()
 
-        if "1050" in title:
-            price_container = container.findAll("li",{"class":"price-current"})
-            price = price_container[0].strong.text
-            list_1050.append(price)
 
 
-def sumandprint(li_x):
+
+def sumandprint(li_x,gpu):
     avg = 0
     low = 0
     high = 0
@@ -45,16 +50,17 @@ def sumandprint(li_x):
         if int(x) > high:
             high = int(x)
 
-    avg = int(avg/len(li_x))
-    f.write(str(avg) + "," + str(low) + "," + str(high) + "\n" )
-    print("Avg: "+ str(avg))
-    print("Low: " + str(low))
-    print("High: " + str(high))
+    if len(li_x) > 0:
+        avg = int(float(avg/len(li_x)))
+        f.write(str(gpu) + ",")
+        f.write(str(avg) + "," + str(low) + "," + str(high) + "\n" )
     
-price_scrape()
-f.write("2060,")
-sumandprint(list_2060)
-f.write("1050")
-sumandprint(list_1050)
+start = time.process_time()
+t = time.localtime()
+current_time = time.strftime("%H:%M:%S",t)
+print("Scraping comminessed at " + current_time)
+for gpus in list_gpus:
+    price_scrape(gpus)
+print("Time lapse: "+ str(time.process_time()- start))
 f.close()
 #TODO change this to a for loop that will loop thru the list of different GPU's that will then scrape that gpu then print it.
