@@ -1,4 +1,5 @@
 # Newegg-GPU-Price-Scrapper
 Simple python script that scrapes from Newegg GPU prices using BeautifulSoup the returns Average price highest and lowest price for each series GPU
 
-Note that it currently only does for GPU 1050 and GPU 2060, in future ideration it will host a list of different GPU's to iterate through.
+Currently it outputs the data to a current.txt file which will later be used in tangent with a reddit bot. 
+Additionally a sleep function will be added so that the prices update every couple hours. This version runs through 50 of the pages for testing and will out put if it runs into a NoneType error. 
