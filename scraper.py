@@ -7,11 +7,10 @@ list_gpus = [2060,2070,2080,3060,3070,3080]
 list_price = []
 list_1050 = []
 
-filename = "current.txt"
-f = open(filename, "w")
+
 
 def price_scrape(gpu):
-    f.write(str(len(list_gpus))+ "\n")
+    
     #gather webpage "Graphics card page only
     for x in range(10):
         try:
@@ -55,13 +54,27 @@ def sumandprint(li_x,gpu):
         avg = int(avg/len(li_x))
         f.write(str(gpu) + "\n")
         f.write(str(avg) + "\n" + str(low) + "\n" + str(high) + "\n" )
+
+
+
+
+
+#Enter loop to load data from site every 120
+while True:    
+    filename = "current.txt"
+    f = open(filename, "w")
+
+
+    start = time.process_time()
+    t = time.localtime()
+    current_time = time.strftime("%H:%M:%S",t)
+    print("Scraping comminessed at " + current_time)
+    f.write(str(len(list_gpus))+ "\n")
+    for gpus in list_gpus:
+        price_scrape(gpus)
+    print("Time lapse: "+ str(time.process_time()- start))
+    f.close()
+    print("Sleeping for 120")
+    time.sleep(120)
+
     
-start = time.process_time()
-t = time.localtime()
-current_time = time.strftime("%H:%M:%S",t)
-print("Scraping comminessed at " + current_time)
-for gpus in list_gpus:
-    price_scrape(gpus)
-print("Time lapse: "+ str(time.process_time()- start))
-f.close()
-#TODO change this to a for loop that will loop thru the list of different GPU's that will then scrape that gpu then print it.

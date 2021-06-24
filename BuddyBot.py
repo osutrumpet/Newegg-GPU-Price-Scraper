@@ -1,16 +1,29 @@
 import praw
 import config
 import time
+import os
 count = 0
 list_gpus = []
 list_data = []
+list_responded =[]
 
-filename = "current.txt"
-f = open(filename, "r")
+
+def load_comment():
+    file_2 = "repliedto.txt"
+    f2 = open(file_2, "w")
+    if not os.path.isfile(file_2):
+        list_responded = []
+
+    with open("repliedto.txt", "r") as f2:
+        list_responded = f2.read()
+        list_responded = list_responded.split("\n")
+    f2.close()
+
 
 def load_data():
+    filename = "current.txt"
+    f = open(filename, "r")
     num_gpu = f.readline()
-    print(str(num_gpu))
 
     for x in range(int(num_gpu) - 1):
         gpu = f.readline()
@@ -21,6 +34,7 @@ def load_data():
         list_data.append(low.replace("\n",""))
         high = f.readline()
         list_data.append(high.replace("\n",""))
+    f.close()
 
 
 
@@ -48,15 +62,21 @@ def run_bot(r):
     print('Searching for "!GPU" ')
     string = form_string()
     for comment in r.subreddit('test').comments(limit= 40):
-        if("!GPU") in comment.body:
+        if("!GPU") in comment.body and comment.id not in list_responded and comment.author != r.user.me():
             print("Found Comment")
             comment.reply(str(string))
+            list_responded.append(comment.id)
+            with open("repliedto.txt", "a") as f2:
+                f2.write(comment.id + "\n")
  
             
 
-
+#login
 r = bot_login()
-load_data()
+#Load previous comments
+load_comment()
 
-f.close()
-run_bot(r)
+while True:
+    load_data()
+    run_bot(r)
+    time.sleep(30)
